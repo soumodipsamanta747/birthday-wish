@@ -2,208 +2,251 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>For Aditi...</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
+        /* --- THE PORTIPONICS / VINTAGE COLOR PALETTE --- */
         :root {
-            --bg-color: #1a1a2e;
-            --card-bg: #ffffff;
-            --text-main: #333333;
-            --text-muted: #666666;
-            --accent: #e94560;
+            --cream: #F5F5F0;
+            --mint-brown: #D2C4B3;
+            --espresso: #4A3B32;
+            --blush-pink: #E8D5D4;
+            --dark-cinematic: #0a0a0c;
+            --gold: #FFD700;
         }
 
         body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: #fff;
-            overflow-x: hidden;
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: var(--cream);
+            font-family: 'Georgia', serif; /* Elegant aesthetic font */
+            overflow: hidden;
+            transition: background-color 2s ease-in-out;
         }
 
-        /* --- INTRO SCREEN --- */
-        #intro-screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(135deg, #16213e, #0f3460);
+        /* --- ACT 1: THE TRAP --- */
+        #scene-1 {
+            position: absolute; width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
             z-index: 10;
-            transition: opacity 1s ease-in-out;
         }
 
-        .tap-text {
-            font-size: 24px;
-            font-weight: 300;
-            margin-bottom: 30px;
-            letter-spacing: 2px;
-            animation: fadeInOut 2s infinite;
+        .touch-text {
+            color: var(--espresso); font-size: 20px; font-style: italic;
+            margin-bottom: 30px; letter-spacing: 2px;
+            animation: pulse 1.5s infinite;
         }
 
-        .gift-btn {
-            font-size: 60px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            animation: bounce 2s infinite;
+        /* The 3D Layered Butterfly */
+        .butterfly-container {
+            position: relative; width: 120px; height: 100px;
+            cursor: pointer; transition: all 0.5s ease-out;
+            transform-style: preserve-3d;
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* --- MAIN STORY CARD --- */
-        #main-story {
-            display: none; /* Hidden until button is clicked */
-            opacity: 0;
-            min-height: 100%;
-            padding: 40px 20px;
-            box-sizing: border-box;
-            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
-            color: var(--text-main);
-            align-items: center;
-            flex-direction: column;
-            transition: opacity 1.5s ease-in-out;
+        .wing {
+            position: absolute; top: 0; width: 60px; height: 100px;
+            background: linear-gradient(135deg, var(--blush-pink), var(--mint-brown));
+            border-radius: 50% 50% 0 50%;
+            box-shadow: 2px 5px 15px rgba(0,0,0,0.2);
+            transform-origin: right center;
+            animation: flap 0.3s infinite alternate;
+        }
+        .wing-right {
+            right: 0; border-radius: 50% 50% 50% 0;
+            transform-origin: left center;
+            animation: flap-right 0.3s infinite alternate;
+        }
+        
+        /* Inner darker layers like the reference */
+        .wing::after {
+            content: ''; position: absolute; top: 10px; left: 10px; width: 40px; height: 70px;
+            background-color: var(--espresso); border-radius: 50%; opacity: 0.7;
         }
 
-        .story-container {
-            background: var(--card-bg);
-            max-width: 500px;
-            padding: 40px 30px;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            text-align: center;
-            transform: translateY(20px);
-            animation: slideUp 1.5s forwards;
+        /* Speech Bubble (Hidden initially) */
+        .speech-bubble {
+            position: absolute; top: -50px; left: -80px;
+            background: white; color: var(--espresso);
+            padding: 10px 15px; border-radius: 15px;
+            font-size: 14px; font-weight: bold; font-family: sans-serif;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            opacity: 0; transform: scale(0); transition: all 0.3s;
+            white-space: nowrap;
+        }
+        .speech-bubble::after {
+            content: ''; position: absolute; bottom: -10px; right: 20px;
+            border-width: 10px 10px 0; border-style: solid;
+            border-color: white transparent transparent transparent;
         }
 
-        h1 {
-            color: var(--accent);
-            font-size: 32px;
-            margin-bottom: 20px;
+        /* --- ACT 3 & 4: CINEMATIC STORY --- */
+        #scene-2 {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; flex-direction: column; align-items: center;
+            padding-top: 20vh; z-index: 5;
+            color: var(--cream); text-align: center;
         }
 
-        .story-paragraph {
-            font-size: 18px;
-            line-height: 1.6;
-            color: var(--text-muted);
-            margin-bottom: 20px;
-            text-align: left;
+        .glowing-butterfly {
+            width: 80px; height: 60px; margin-bottom: 30px;
+            background: var(--gold);
+            clip-path: polygon(0 0, 100% 0, 80% 100%, 20% 100%);
+            animation: floatGlow 3s infinite ease-in-out;
+            opacity: 0; transition: opacity 2s;
         }
 
-        .highlight {
-            color: var(--accent);
-            font-weight: bold;
+        .story-text {
+            width: 85%; max-width: 500px;
+            font-size: 18px; line-height: 1.8;
+            text-shadow: 0 0 10px rgba(255,215,0,0.3);
+            min-height: 150px;
         }
 
-        .signature {
-            margin-top: 30px;
-            font-size: 20px;
-            font-weight: bold;
-            text-align: right;
-            color: var(--text-main);
-        }
+        /* Animations */
+        @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; transform: scale(1.05); } }
+        @keyframes flap { from { transform: rotateY(20deg); } to { transform: rotateY(60deg); } }
+        @keyframes flap-right { from { transform: rotateY(-20deg); } to { transform: rotateY(-60deg); } }
+        @keyframes floatGlow { 0%, 100% { transform: translateY(0); box-shadow: 0 0 20px var(--gold); } 50% { transform: translateY(-15px); box-shadow: 0 0 40px var(--gold); } }
 
-        /* --- ANIMATIONS --- */
-        @keyframes fadeInOut {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-        }
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
-        }
-        @keyframes slideUp {
-            to { transform: translateY(0); }
-        }
     </style>
 </head>
 <body>
 
-    <div id="intro-screen">
-        <div class="tap-text">For Aditi...</div>
-        <button class="gift-btn" onclick="revealStory()">🎁</button>
-        <div style="font-size: 14px; margin-top: 20px; color: #aaa;">Tap to open</div>
-    </div>
-
-    <div id="main-story">
-        <div class="story-container">
-            <h1>Happy Birthday, Aditi! ✨</h1>
-            
-            <div class="story-paragraph">
-                They say that rare things are the most valuable, and honestly, finding a friend like you is the rarest thing that has ever happened to me. 
-            </div>
-            
-            <div class="story-paragraph">
-                From the random conversations to simply having someone who understands me without needing to explain—you've been there. You make the good days better and the hard days so much easier to handle.
-            </div>
-            
-            <div class="story-paragraph">
-                I wanted to make something special for you today because <span class="highlight">you deserve the world</span>. Thank you for being such an incredible, supportive, and amazing friend. 
-            </div>
-
-            <div class="story-paragraph">
-                May this year bring you as much happiness as you bring to everyone around you. Keep shining, keep smiling, and never change who you are.
-            </div>
-
-            <div class="signature">
-                With all my love,<br>
-                Your Friend ❤️
-            </div>
+    <div id="scene-1">
+        <div class="touch-text" id="bait-text">touch me...</div>
+        
+        <div class="butterfly-container" id="butterfly" onclick="triggerTrap()">
+            <div class="speech-bubble" id="bubble">how dare you!</div>
+            <div class="wing"></div>
+            <div class="wing wing-right"></div>
         </div>
     </div>
 
+    <div id="scene-2">
+        <div class="glowing-butterfly" id="hero-butterfly"></div>
+        <div class="story-text" id="typewriter-text"></div>
+    </div>
+
     <script>
-        function revealStory() {
-            // Fade out intro
-            const intro = document.getElementById('intro-screen');
-            const story = document.getElementById('main-story');
-            
-            intro.style.opacity = '0';
-            
-            // Wait for fade out, then show story and fire confetti
+        // --- AUDIO ASSETS (Direct Web Links) ---
+        const flapAudio = new Audio('https://actions.google.com/sounds/v1/animals/bird_wing_flap.ogg');
+        const angryAudio = new Audio('https://actions.google.com/sounds/v1/cartoon/cartoon_boing.ogg');
+        const fallAudio = new Audio('https://actions.google.com/sounds/v1/cartoon/slide_whistle_to_drum_bump.ogg');
+        const typeAudio = new Audio('https://actions.google.com/sounds/v1/office/typewriter_typing_fast.ogg');
+        const bgmAudio = new Audio('https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3'); // Emotional piano
+        
+        bgmAudio.loop = true;
+        bgmAudio.volume = 0.5;
+
+        let trapTriggered = false;
+
+        function triggerTrap() {
+            if (trapTriggered) return;
+            trapTriggered = true;
+
+            const butterfly = document.getElementById('butterfly');
+            const bubble = document.getElementById('bubble');
+            const baitText = document.getElementById('bait-text');
+
+            // 1. Play sounds
+            flapAudio.play();
+            angryAudio.play();
+
+            // 2. Hide "touch me"
+            baitText.style.opacity = '0';
+
+            // 3. Move butterfly to the corner fast!
+            butterfly.style.position = 'absolute';
+            butterfly.style.top = '10%';
+            butterfly.style.right = '10%';
+            butterfly.style.transform = 'scale(0.6) rotate(-15deg)';
+
+            // 4. Show first angry message
             setTimeout(() => {
-                intro.style.display = 'none';
-                story.style.display = 'flex';
-                
-                // Trigger a slight delay before fading in the story
-                setTimeout(() => {
-                    story.style.opacity = '1';
-                    fireConfetti();
-                }, 100);
-                
-            }, 1000); // 1 second transition
+                bubble.style.opacity = '1';
+                bubble.style.transform = 'scale(1)';
+            }, 300);
+
+            // 5. Change to second funny message
+            setTimeout(() => {
+                bubble.innerText = "don't you have father and brother?";
+                angryAudio.currentTime = 0; 
+                angryAudio.play(); // Play squeak again
+            }, 1500);
+
+            // 6. FALL DOWN OFF SCREEN
+            setTimeout(() => {
+                bubble.style.opacity = '0';
+                fallAudio.play();
+                butterfly.style.transition = 'all 0.8s cubic-bezier(0.55, 0.085, 0.68, 0.53)'; // Gravity curve
+                butterfly.style.top = '150%'; // Drops way below screen
+            }, 3500);
+
+            // 7. START WUKONG CINEMATIC REVEAL
+            setTimeout(startEpicReveal, 4500);
         }
 
-        function fireConfetti() {
+        function startEpicReveal() {
+            // Darken background
+            document.body.style.backgroundColor = 'var(--dark-cinematic)';
+            
+            // Hide Scene 1, Show Scene 2
+            document.getElementById('scene-1').style.display = 'none';
+            document.getElementById('scene-2').style.display = 'flex';
+
+            // FIREWORKS! (Golden/Ember themed)
             var duration = 3 * 1000;
-            var animationEnd = Date.now() + duration;
-            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+            var end = Date.now() + duration;
 
-            function randomInRange(min, max) {
-                return Math.random() * (max - min) + min;
-            }
+            (function frame() {
+                confetti({
+                    particleCount: 5, angle: 60, spread: 55, origin: { x: 0, y: 1 },
+                    colors: ['#FFD700', '#FFA500', '#FF4500']
+                });
+                confetti({
+                    particleCount: 5, angle: 120, spread: 55, origin: { x: 1, y: 1 },
+                    colors: ['#FFD700', '#FFA500', '#FF4500']
+                });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            }());
 
-            var interval = setInterval(function() {
-                var timeLeft = animationEnd - Date.now();
+            // Reveal Glowing Butterfly
+            setTimeout(() => {
+                document.getElementById('hero-butterfly').style.opacity = '1';
+                bgmAudio.play(); // Start emotional music
+            }, 1500);
 
-                if (timeLeft <= 0) {
-                    return clearInterval(interval);
+            // Start Typewriter Story
+            setTimeout(typeStory, 3000);
+        }
+
+        // --- THE STORY TEXT ---
+        const story = "The funny part is over... \n\nFinding a friend like you is like finding a rare piece of art. \n\nYou bring so much color and joy into the lives of everyone around you. \n\nHappy Birthday, Aditi. \n\nNever stop flying.";
+        
+        let i = 0;
+        function typeStory() {
+            const textElement = document.getElementById('typewriter-text');
+            
+            if (i < story.length) {
+                // Play typing sound periodically
+                if (i % 3 === 0) {
+                    typeAudio.currentTime = 0;
+                    typeAudio.play();
                 }
-
-                var particleCount = 50 * (timeLeft / duration);
-                confetti(Object.assign({}, defaults, { particleCount,
-                    origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
-                }));
-                confetti(Object.assign({}, defaults, { particleCount,
-                    origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
-                }));
-            }, 250);
+                
+                // Handle line breaks
+                if (story.charAt(i) === '\n') {
+                    textElement.innerHTML += '<br>';
+                } else {
+                    textElement.innerHTML += story.charAt(i);
+                }
+                
+                i++;
+                setTimeout(typeStory, 70); // Speed of typing
+            }
         }
     </script>
 </body>
