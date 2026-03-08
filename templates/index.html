@@ -3,250 +3,377 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>For Aditi...</title>
+    <title>A Magical Journey for Aditi</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        /* --- THE PORTIPONICS / VINTAGE COLOR PALETTE --- */
-        :root {
-            --cream: #F5F5F0;
-            --mint-brown: #D2C4B3;
-            --espresso: #4A3B32;
-            --blush-pink: #E8D5D4;
-            --dark-cinematic: #0a0a0c;
-            --gold: #FFD700;
-        }
-
+        /* --- CORE STYLES --- */
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
-            background-color: var(--cream);
-            font-family: 'Georgia', serif; /* Elegant aesthetic font */
-            overflow: hidden;
+            overflow: hidden; font-family: 'Georgia', serif;
+            background-color: #87CEEB; /* Sky Blue */
+            touch-action: none; /* Prevents default browser zooming so our game works */
             transition: background-color 2s ease-in-out;
         }
 
-        /* --- ACT 1: THE TRAP --- */
-        #scene-1 {
-            position: absolute; width: 100%; height: 100%;
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-            z-index: 10;
+        /* --- THE WORLD (Moves when zooming) --- */
+        #world {
+            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+            transform-origin: center bottom;
+            transition: transform 0.3s ease-out;
+            display: none;
         }
 
-        .touch-text {
-            color: var(--espresso); font-size: 20px; font-style: italic;
-            margin-bottom: 30px; letter-spacing: 2px;
-            animation: pulse 1.5s infinite;
-        }
+        .sky { position: absolute; top: 0; width: 100%; height: 60%; background: linear-gradient(to bottom, #5bb4ff, #a1d6ff); }
+        .field { position: absolute; bottom: 0; width: 100%; height: 40%; background: linear-gradient(to top, #4CAF50, #81C784); border-top: 2px solid #388E3C; }
 
-        /* The 3D Layered Butterfly */
-        .butterfly-container {
-            position: relative; width: 120px; height: 100px;
-            cursor: pointer; transition: all 0.5s ease-out;
-            transform-style: preserve-3d;
-            -webkit-tap-highlight-color: transparent;
-        }
+        /* Flowers */
+        .flower { position: absolute; width: 15px; height: 15px; background: white; border-radius: 50%; box-shadow: inset 0 0 5px yellow; }
+        .flower::before, .flower::after { content: ''; position: absolute; width: 15px; height: 15px; background: pink; border-radius: 50%; z-index: -1; }
+        .flower::before { transform: rotate(45deg); } .flower::after { transform: rotate(90deg); }
 
-        .wing {
-            position: absolute; top: 0; width: 60px; height: 100px;
-            background: linear-gradient(135deg, var(--blush-pink), var(--mint-brown));
+        /* The Blossom Tree */
+        #tree {
+            position: absolute; bottom: 35%; left: 50%; transform: translateX(-50%);
+            width: 150px; height: 200px;
+        }
+        .trunk { position: absolute; bottom: 0; left: 45%; width: 10%; height: 50%; background: #5D4037; border-radius: 5px; }
+        .blossom { position: absolute; top: 0; left: -20%; width: 140%; height: 70%; background: radial-gradient(circle, #ffb7c5, #ff8da1); border-radius: 50%; opacity: 0.9; box-shadow: 0 0 20px rgba(255, 183, 197, 0.8); }
+        .blossom2 { position: absolute; top: 10%; left: -40%; width: 100%; height: 50%; background: #ffb7c5; border-radius: 50%; opacity: 0.9; }
+        .blossom3 { position: absolute; top: 10%; right: -40%; width: 100%; height: 50%; background: #ffb7c5; border-radius: 50%; opacity: 0.9; }
+
+        /* --- THE GUIDE (Butterfly) --- */
+        #butterfly-container {
+            position: absolute; bottom: 10%; left: 50%; transform: translateX(-50%);
+            width: 60px; height: 60px; z-index: 10;
+            display: none; opacity: 0; transition: all 1s ease;
+        }
+        .butterfly-wing {
+            position: absolute; top: 0; width: 30px; height: 50px;
+            background: radial-gradient(circle, #fff, #333);
             border-radius: 50% 50% 0 50%;
-            box-shadow: 2px 5px 15px rgba(0,0,0,0.2);
-            transform-origin: right center;
-            animation: flap 0.3s infinite alternate;
+            transform-origin: right center; animation: flap 0.15s infinite alternate;
         }
-        .wing-right {
-            right: 0; border-radius: 50% 50% 50% 0;
-            transform-origin: left center;
-            animation: flap-right 0.3s infinite alternate;
+        .wing-right { right: 0; border-radius: 50% 50% 50% 0; transform-origin: left center; animation: flap-right 0.15s infinite alternate; }
+        
+        /* Fairy Sparkles */
+        .sparkle { position: absolute; width: 4px; height: 4px; background: gold; border-radius: 50%; animation: twinkle 1s infinite; }
+
+        /* Speech Bubble */
+        .speech-bubble {
+            position: absolute; top: -50px; left: -60px; background: white; color: #333;
+            padding: 10px 15px; border-radius: 15px; font-size: 14px; font-weight: bold; font-family: sans-serif;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); opacity: 0; transition: opacity 0.5s; white-space: nowrap;
+        }
+        .speech-bubble::after { content: ''; position: absolute; bottom: -10px; left: 50%; border-width: 10px 10px 0; border-style: solid; border-color: white transparent transparent transparent; transform: translateX(-50%); }
+
+        /* --- THE MYSTERY BOX --- */
+        #mystery-box {
+            position: absolute; bottom: 35%; left: 50%; transform: translateX(-50%) scale(0);
+            width: 50px; height: 50px; background: linear-gradient(135deg, #9C27B0, #6A1B9A);
+            border-radius: 5px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 5;
+            cursor: pointer; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .crystal-knob { position: absolute; top: -10px; left: 20px; width: 10px; height: 10px; background: #E0F7FA; border-radius: 50%; box-shadow: 0 0 10px white; }
+
+        /* --- THE CAKE --- */
+        #cake-container {
+            position: absolute; bottom: 35%; left: 50%; transform: translateX(-50%) scale(0);
+            width: 80px; height: 100px; z-index: 6; transition: transform 1s ease;
+        }
+        .cake-base { position: absolute; bottom: 0; width: 100%; height: 40px; background: #FFF3E0; border-radius: 10px; border-bottom: 5px solid #E65100; }
+        .heart-topping { position: absolute; top: 45px; left: 35px; color: red; font-size: 20px; animation: pulse 1s infinite; }
+        .candle { position: absolute; bottom: 40px; left: 35px; width: 8px; height: 30px; background: repeating-linear-gradient(45deg, white, white 5px, pink 5px, pink 10px); }
+        .flame { position: absolute; top: -15px; left: -1px; width: 10px; height: 15px; background: orange; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; box-shadow: 0 0 10px yellow; animation: flicker 0.1s infinite alternate; }
+
+        /* --- UI & TEXT --- */
+        #intro-screen {
+            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #1a1a2e; color: white; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 100;
+        }
+        .start-btn { padding: 15px 30px; font-size: 18px; background: #e94560; color: white; border: none; border-radius: 25px; cursor: pointer; animation: pulse 2s infinite; margin-top: 20px; }
+        
+        #instruction-text {
+            position: absolute; bottom: 5%; left: 50%; transform: translateX(-50%);
+            color: white; font-size: 18px; font-weight: bold; text-shadow: 1px 1px 5px black;
+            text-align: center; z-index: 20; display: none; width: 90%;
         }
         
-        /* Inner darker layers like the reference */
-        .wing::after {
-            content: ''; position: absolute; top: 10px; left: 10px; width: 40px; height: 70px;
-            background-color: var(--espresso); border-radius: 50%; opacity: 0.7;
+        #walk-btn {
+            position: absolute; bottom: 15%; left: 50%; transform: translateX(-50%);
+            padding: 10px 20px; background: rgba(255,255,255,0.8); border: none; border-radius: 20px;
+            font-weight: bold; display: none; z-index: 20;
         }
 
-        /* Speech Bubble (Hidden initially) */
-        .speech-bubble {
-            position: absolute; top: -50px; left: -80px;
-            background: white; color: var(--espresso);
-            padding: 10px 15px; border-radius: 15px;
-            font-size: 14px; font-weight: bold; font-family: sans-serif;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            opacity: 0; transform: scale(0); transition: all 0.3s;
-            white-space: nowrap;
-        }
-        .speech-bubble::after {
-            content: ''; position: absolute; bottom: -10px; right: 20px;
-            border-width: 10px 10px 0; border-style: solid;
-            border-color: white transparent transparent transparent;
-        }
-
-        /* --- ACT 3 & 4: CINEMATIC STORY --- */
-        #scene-2 {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: none; flex-direction: column; align-items: center;
-            padding-top: 20vh; z-index: 5;
-            color: var(--cream); text-align: center;
-        }
-
-        .glowing-butterfly {
-            width: 80px; height: 60px; margin-bottom: 30px;
-            background: var(--gold);
-            clip-path: polygon(0 0, 100% 0, 80% 100%, 20% 100%);
-            animation: floatGlow 3s infinite ease-in-out;
-            opacity: 0; transition: opacity 2s;
-        }
-
-        .story-text {
-            width: 85%; max-width: 500px;
-            font-size: 18px; line-height: 1.8;
-            text-shadow: 0 0 10px rgba(255,215,0,0.3);
-            min-height: 150px;
+        #final-text {
+            position: absolute; top: 20%; left: 50%; transform: translateX(-50%);
+            color: #FFD700; font-size: 24px; text-align: center; font-weight: bold;
+            opacity: 0; transition: opacity 2s; z-index: 50; text-shadow: 0 0 15px #FFD700;
         }
 
         /* Animations */
-        @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; transform: scale(1.05); } }
-        @keyframes flap { from { transform: rotateY(20deg); } to { transform: rotateY(60deg); } }
-        @keyframes flap-right { from { transform: rotateY(-20deg); } to { transform: rotateY(-60deg); } }
-        @keyframes floatGlow { 0%, 100% { transform: translateY(0); box-shadow: 0 0 20px var(--gold); } 50% { transform: translateY(-15px); box-shadow: 0 0 40px var(--gold); } }
+        @keyframes flap { from { transform: rotateY(10deg); } to { transform: rotateY(70deg); } }
+        @keyframes flap-right { from { transform: rotateY(-10deg); } to { transform: rotateY(-70deg); } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        @keyframes twinkle { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
+        @keyframes flicker { 0% { transform: scale(1); opacity: 0.9; } 100% { transform: scale(1.1); opacity: 1; } }
 
     </style>
 </head>
 <body>
 
-    <div id="scene-1">
-        <div class="touch-text" id="bait-text">touch me...</div>
+    <div id="intro-screen">
+        <h2>A Magical Journey Awaits...</h2>
+        <p style="font-size: 14px; color: #aaa; text-align: center; padding: 20px;">
+            Please allow Microphone access if asked.<br>It is needed for the final surprise!
+        </p>
+        <button class="start-btn" onclick="startGame()">Tap to Enter</button>
+    </div>
+
+    <div id="world">
+        <div class="sky"></div>
+        <div class="field" id="flower-field"></div>
         
-        <div class="butterfly-container" id="butterfly" onclick="triggerTrap()">
-            <div class="speech-bubble" id="bubble">how dare you!</div>
-            <div class="wing"></div>
-            <div class="wing wing-right"></div>
+        <div id="tree">
+            <div class="trunk"></div>
+            <div class="blossom"></div>
+            <div class="blossom2"></div>
+            <div class="blossom3"></div>
+        </div>
+
+        <div id="mystery-box" onclick="openBox()">
+            <div class="crystal-knob"></div>
+        </div>
+
+        <div id="cake-container">
+            <div class="flame" id="candle-flame"></div>
+            <div class="candle"></div>
+            <div class="heart-topping">❤️</div>
+            <div class="cake-base"></div>
         </div>
     </div>
 
-    <div id="scene-2">
-        <div class="glowing-butterfly" id="hero-butterfly"></div>
-        <div class="story-text" id="typewriter-text"></div>
+    <div id="butterfly-container">
+        <div class="speech-bubble" id="bubble">hi! I am your friend.</div>
+        <div class="butterfly-wing"></div>
+        <div class="butterfly-wing wing-right"></div>
+    </div>
+
+    <div id="instruction-text"></div>
+    <button id="walk-btn" onclick="forceWalk()">Tap here if zooming doesn't work</button>
+    
+    <div id="final-text">
+        Happy Birthday, Aditi!<br><br>
+        <span style="font-size: 16px; color: white; text-shadow: none;">May your life be as magical as this journey.</span>
     </div>
 
     <script>
-        // --- AUDIO ASSETS (Direct Web Links) ---
-        const flapAudio = new Audio('https://actions.google.com/sounds/v1/animals/bird_wing_flap.ogg');
-        const angryAudio = new Audio('https://actions.google.com/sounds/v1/cartoon/cartoon_boing.ogg');
-        const fallAudio = new Audio('https://actions.google.com/sounds/v1/cartoon/slide_whistle_to_drum_bump.ogg');
-        const typeAudio = new Audio('https://actions.google.com/sounds/v1/office/typewriter_typing_fast.ogg');
-        const bgmAudio = new Audio('https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3'); // Emotional piano
+        // --- AUDIO ASSETS ---
+        const chimeAudio = new Audio('https://actions.google.com/sounds/v1/magic/magic_chime.ogg');
+        const whooshAudio = new Audio('https://actions.google.com/sounds/v1/weather/wind_whoosh.ogg');
+        const dingAudio = new Audio('https://actions.google.com/sounds/v1/cartoon/clank_and_squeak.ogg');
+        const popAudio = new Audio('https://actions.google.com/sounds/v1/cartoon/pop.ogg');
+        const hbdAudio = new Audio('https://cdn.pixabay.com/download/audio/2022/10/25/audio_517cf08fb1.mp3'); // Happy Birthday Instrumental
         
-        bgmAudio.loop = true;
-        bgmAudio.volume = 0.5;
+        let zoomLevel = 1;
+        let walkProgress = 0;
+        let audioContext, analyser, microphone;
+        let isAtTree = false;
 
-        let trapTriggered = false;
-
-        function triggerTrap() {
-            if (trapTriggered) return;
-            trapTriggered = true;
-
-            const butterfly = document.getElementById('butterfly');
-            const bubble = document.getElementById('bubble');
-            const baitText = document.getElementById('bait-text');
-
-            // 1. Play sounds
-            flapAudio.play();
-            angryAudio.play();
-
-            // 2. Hide "touch me"
-            baitText.style.opacity = '0';
-
-            // 3. Move butterfly to the corner fast!
-            butterfly.style.position = 'absolute';
-            butterfly.style.top = '10%';
-            butterfly.style.right = '10%';
-            butterfly.style.transform = 'scale(0.6) rotate(-15deg)';
-
-            // 4. Show first angry message
-            setTimeout(() => {
-                bubble.style.opacity = '1';
-                bubble.style.transform = 'scale(1)';
-            }, 300);
-
-            // 5. Change to second funny message
-            setTimeout(() => {
-                bubble.innerText = "don't you have father and brother?";
-                angryAudio.currentTime = 0; 
-                angryAudio.play(); // Play squeak again
-            }, 1500);
-
-            // 6. FALL DOWN OFF SCREEN
-            setTimeout(() => {
-                bubble.style.opacity = '0';
-                fallAudio.play();
-                butterfly.style.transition = 'all 0.8s cubic-bezier(0.55, 0.085, 0.68, 0.53)'; // Gravity curve
-                butterfly.style.top = '150%'; // Drops way below screen
-            }, 3500);
-
-            // 7. START WUKONG CINEMATIC REVEAL
-            setTimeout(startEpicReveal, 4500);
+        // Generate Random Flowers
+        const field = document.getElementById('flower-field');
+        for(let i=0; i<30; i++) {
+            let f = document.createElement('div');
+            f.className = 'flower';
+            f.style.left = Math.random() * 100 + '%';
+            f.style.bottom = Math.random() * 80 + '%';
+            field.appendChild(f);
         }
 
-        function startEpicReveal() {
-            // Darken background
-            document.body.style.backgroundColor = 'var(--dark-cinematic)';
+        // --- PHASE 1: STARTUP ---
+        function startGame() {
+            document.getElementById('intro-screen').style.display = 'none';
+            document.getElementById('world').style.display = 'block';
             
-            // Hide Scene 1, Show Scene 2
-            document.getElementById('scene-1').style.display = 'none';
-            document.getElementById('scene-2').style.display = 'flex';
+            // Spawn Fairy Sparkles & Butterfly
+            chimeAudio.play();
+            setTimeout(() => {
+                const bfly = document.getElementById('butterfly-container');
+                bfly.style.display = 'block';
+                setTimeout(() => bfly.style.opacity = '1', 100);
+                
+                startDialogue();
+            }, 1000);
+            
+            // Pre-request Mic permission early
+            setupMicrophone();
+        }
 
-            // FIREWORKS! (Golden/Ember themed)
-            var duration = 3 * 1000;
+        // --- PHASE 2: DIALOGUE ---
+        const dialogues = [
+            "hi! I am your friend.",
+            "come we have to go for tree",
+            "there treasure for you",
+            "come! Pinch the screen to zoom & walk!"
+        ];
+        
+        function startDialogue() {
+            const bubble = document.getElementById('bubble');
+            bubble.style.opacity = '1';
+            let i = 0;
+            
+            const chatInterval = setInterval(() => {
+                i++;
+                if(i < dialogues.length) {
+                    bubble.innerText = dialogues[i];
+                } else {
+                    clearInterval(chatInterval);
+                    document.getElementById('walk-btn').style.display = 'block';
+                    enableZoomToWalk();
+                }
+            }, 3000);
+        }
+
+        // --- PHASE 3: ZOOM TO WALK ---
+        let initialDistance = 0;
+        function enableZoomToWalk() {
+            const world = document.getElementById('world');
+            
+            // Touch Event Listeners for Pinch Zoom
+            window.addEventListener('touchmove', (e) => {
+                if(isAtTree) return;
+                if(e.touches.length === 2) {
+                    let dist = Math.hypot(
+                        e.touches[0].pageX - e.touches[1].pageX,
+                        e.touches[0].pageY - e.touches[1].pageY
+                    );
+                    
+                    if(initialDistance === 0) initialDistance = dist;
+                    
+                    if(dist > initialDistance + 20) {
+                        walkForward();
+                        initialDistance = dist; // Reset to require more pinch
+                    }
+                }
+            });
+        }
+
+        // Fallback button if pinch doesn't work on their specific browser
+        function forceWalk() { walkForward(); walkForward(); }
+
+        function walkForward() {
+            if(isAtTree) return;
+            walkProgress += 1;
+            zoomLevel += 0.3;
+            
+            document.getElementById('world').style.transform = `scale(${zoomLevel})`;
+            document.getElementById('butterfly-container').style.transform = `translateX(-50%) scale(${1/zoomLevel})`; // Keep butterfly normal size
+            
+            if(walkProgress === 1) whooshAudio.play();
+
+            if(walkProgress >= 5) {
+                reachTree();
+            }
+        }
+
+        // --- PHASE 4: THE TREE & THE BOX ---
+        function reachTree() {
+            isAtTree = true;
+            document.getElementById('walk-btn').style.display = 'none';
+            document.getElementById('bubble').innerText = "Look! Open it!";
+            
+            setTimeout(() => {
+                dingAudio.play();
+                document.getElementById('mystery-box').style.transform = `translateX(-50%) scale(${1/zoomLevel})`;
+            }, 500);
+        }
+
+        function openBox() {
+            popAudio.play();
+            document.getElementById('mystery-box').style.display = 'none';
+            document.getElementById('cake-container').style.transform = `translateX(-50%) scale(${1.5/zoomLevel})`;
+            
+            document.getElementById('bubble').style.opacity = '0';
+            
+            const instText = document.getElementById('instruction-text');
+            instText.style.display = 'block';
+            instText.innerText = "Blow directly into your phone's microphone to blow out the candle!";
+            
+            startBlowDetection();
+        }
+
+        // --- PHASE 5: THE MICROPHONE BLOW DETECTION ---
+        function setupMicrophone() {
+            navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+            .then(function(stream) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                microphone = audioContext.createMediaStreamSource(stream);
+                microphone.connect(analyser);
+                analyser.smoothingTimeConstant = 0.8;
+                analyser.fftSize = 256;
+            })
+            .catch(function(err) {
+                console.log("Mic error: ", err);
+                // Fallback if mic is blocked
+                document.getElementById('instruction-text').innerHTML = "Mic access blocked. <br><button onclick='triggerFinale()' style='padding:10px; margin-top:10px;'>Tap here to light up the party!</button>";
+            });
+        }
+
+        function startBlowDetection() {
+            if(!analyser) return; // Mic failed
+            
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            
+            function checkAudio() {
+                analyser.getByteFrequencyData(dataArray);
+                let sum = 0;
+                for(let i = 0; i < bufferLength; i++) { sum += dataArray[i]; }
+                let average = sum / bufferLength;
+
+                // If average volume spikes above 60, it registers as a "Blow"
+                if (average > 60) {
+                    triggerFinale();
+                } else {
+                    requestAnimationFrame(checkAudio);
+                }
+            }
+            checkAudio();
+        }
+
+        // --- PHASE 6: THE EPIC FINALE ---
+        let finaleTriggered = false;
+        function triggerFinale() {
+            if(finaleTriggered) return;
+            finaleTriggered = true;
+
+            // Blow out candle
+            document.getElementById('candle-flame').style.display = 'none';
+            document.getElementById('instruction-text').style.display = 'none';
+            document.getElementById('butterfly-container').style.display = 'none';
+            
+            // Wukong Cinematic Dark Transition
+            document.body.style.backgroundColor = '#0a0a0c';
+            document.getElementById('world').style.opacity = '0'; // Fade out world
+
+            // Start Fireworks & Music
+            setTimeout(() => {
+                hbdAudio.play();
+                launchFireworks();
+                document.getElementById('final-text').style.opacity = '1';
+            }, 1000);
+        }
+
+        function launchFireworks() {
+            var duration = 5 * 1000;
             var end = Date.now() + duration;
 
             (function frame() {
-                confetti({
-                    particleCount: 5, angle: 60, spread: 55, origin: { x: 0, y: 1 },
-                    colors: ['#FFD700', '#FFA500', '#FF4500']
-                });
-                confetti({
-                    particleCount: 5, angle: 120, spread: 55, origin: { x: 1, y: 1 },
-                    colors: ['#FFD700', '#FFA500', '#FF4500']
-                });
+                confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0, y: 1 }, colors: ['#FF1493', '#00BFFF', '#FFD700'] });
+                confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1, y: 1 }, colors: ['#FF1493', '#00BFFF', '#FFD700'] });
                 if (Date.now() < end) requestAnimationFrame(frame);
             }());
-
-            // Reveal Glowing Butterfly
-            setTimeout(() => {
-                document.getElementById('hero-butterfly').style.opacity = '1';
-                bgmAudio.play(); // Start emotional music
-            }, 1500);
-
-            // Start Typewriter Story
-            setTimeout(typeStory, 3000);
-        }
-
-        // --- THE STORY TEXT ---
-        const story = "The funny part is over... \n\nFinding a friend like you is like finding a rare piece of art. \n\nYou bring so much color and joy into the lives of everyone around you. \n\nHappy Birthday, Aditi. \n\nNever stop flying.";
-        
-        let i = 0;
-        function typeStory() {
-            const textElement = document.getElementById('typewriter-text');
-            
-            if (i < story.length) {
-                // Play typing sound periodically
-                if (i % 3 === 0) {
-                    typeAudio.currentTime = 0;
-                    typeAudio.play();
-                }
-                
-                // Handle line breaks
-                if (story.charAt(i) === '\n') {
-                    textElement.innerHTML += '<br>';
-                } else {
-                    textElement.innerHTML += story.charAt(i);
-                }
-                
-                i++;
-                setTimeout(typeStory, 70); // Speed of typing
-            }
         }
     </script>
 </body>
